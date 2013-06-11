@@ -1,0 +1,74 @@
+local blocks = turtle.getItemCount(2)
+
+for slot=3,16 do
+  if turtle.compareTo(2) then
+    blocks = blocks + turtle.getItemCount(slot)
+  end
+end
+
+size = math.floor(math.sqrt(blocks))
+sizeStr = tostring(size)
+print("Making a " .. sizeStr .. "x" .. sizeStr .. " platform")
+
+function prevBlockSlot(curSlot)
+  for slot=curSlot,2,-1 do
+    turtle.select(slot)
+    if turtle.compareTo(2) then
+      return slot
+    end
+  end
+end
+
+function forward(curSlot)
+  if turtle.getFuelLevel() < 1 then
+    select(1)
+    turtle.refuel(1)
+    turtle.select(curSlot)
+  end
+  for i=1,10 do
+    if turtle.detect() then
+      turtle.dig()
+    end
+    if turtle.forward() then
+      return true
+    end
+  end
+
+  return nil
+end
+
+function placeDown(curSlot)
+  if not turtle.compareTo(2) then
+    curSlot = prevBlockSlot(curSlot)
+  end
+  turtle.placeDown()
+  return curSlot
+end
+
+local curSlot = prevBlockSlot(16)
+
+for row=1,size do
+  for i=1,size-1 do
+    curSlot = placeDown(curSlot)
+    if not forward(curSlot) then
+      print("Error: block in the way")
+      return
+    end
+  end
+  curSlot = placeDown(curSlot)
+  if row%2 == 1 then
+    turtle.turnRight()
+    if not forward(curSlot) then
+      print("Error: block in the way")
+      return
+    end
+    turtle.turnRight()
+  else
+    turtle.turnLeft()
+    if not forward(curSlot) then
+      print("Error: block in the way")
+      return
+    end
+    turtle.turnLeft()
+  end
+end
